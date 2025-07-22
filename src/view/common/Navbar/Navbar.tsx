@@ -45,9 +45,6 @@ export function Navbar({ user, onLogout }: ResponsiveNavbarProps) {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-6">
                         <Link to="/" className="hover:underline transition-all duration-200">
-                            Home
-                        </Link>
-                        <Link to="/browse-books" className="hover:underline transition-all duration-200">
                             Browse Books
                         </Link>
 

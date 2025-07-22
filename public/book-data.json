@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "title" : "Harry Potter",
+    "author" : "JK Rowling",
+    "category" : "Fantasy",
+    "description" : "This is a description",
+    "condition": "New",
+    "image": "HarryPotter.jpg",
+    "ownerId": 1
+  },
+  {
+    "id": 2,
+    "title" : "Game Of Thrones Book 1",
+    "author" : "George R. R. Martin",
+    "category" : "Fantasy",
+    "description" : "This is a description",
+    "condition": "Used-Good",
+    "image": "GameofThrones.jpg",
+    "ownerId": 2
+  }
+
+]

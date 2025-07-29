@@ -1,5 +1,3 @@
-"use client"
-
 import { Link } from "react-router-dom"
 import { useState } from "react"
 import icon from "../../../assets/react.svg"

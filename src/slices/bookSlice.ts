@@ -40,8 +40,7 @@ export const bookSlice = createSlice({
                 state.selectedCategory = action.payload;
                 applyFilters(state);
             },
-            // setFilteredBooksInternal is not strictly needed if applyFilters is called directly
-            // by other reducers or extraReducers. If you want to expose it as an action, keep it.
+
             // setFilteredBooksInternal: (state) => {
             //     applyFilters(state);
             // },

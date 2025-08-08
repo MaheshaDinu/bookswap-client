@@ -6,14 +6,14 @@ import {getUserFromToken} from "../../../auth/auth.ts";
 import type {UserData} from "../../../model/userData.ts";
 
 export function DefaultLayout() {
+    const [user, setUser] = useState<UserData>(null);
 
-    const[user, setUser] = useState<UserData>( null);
-    useEffect(()=>{
-        const accessToken = localStorage.getItem("accessToken")
-        if(accessToken){
-            setUser(getUserFromToken(accessToken))
-        }
-    },[user])
+    useEffect(() => {
+
+        const accessToken = localStorage.getItem("accessToken");
+        setUser(getUserFromToken(accessToken));
+    },[])
+
     return (
         <>
             <Navbar user={user}/>

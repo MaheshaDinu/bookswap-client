@@ -6,6 +6,9 @@ import App from './App.tsx'
 import {store} from "./store/store.ts";
 import {Provider} from "react-redux";
 import {BrowserRouter} from "react-router-dom";
+import {setupAxiosInterceptors} from "./utils/setupAxiosInterceptors.ts";
+
+setupAxiosInterceptors(store)
 
 createRoot(document.getElementById('root')!).render(
     <BrowserRouter>

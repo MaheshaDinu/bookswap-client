@@ -15,6 +15,7 @@ interface MainContentProps {
 }
 export function MainContent({user}:MainContentProps) {
 
+
     let isLoggedIn = false;
     if(user){
         isLoggedIn = true

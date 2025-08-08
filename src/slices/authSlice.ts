@@ -1,12 +1,33 @@
 import type {UserData} from "../model/userData.ts";
-import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {getUserFromToken, isTokenExpired} from "../auth/auth.ts";
 import {backendApi} from "../api.ts";
+import type PayloadAction from "@reduxjs/toolkit";
+import type {RootState} from "../store/store.ts";
 
-export const refreshAccessToken = createAsyncThunk(
+
+interface authState {
+    user: UserData | null,
+    accessToken: string | null,
+    refreshToken: string | null,
+    isLoading: boolean,
+    isLoggedIn: boolean
+    status: 'idle' | 'loading' | 'failed' | 'refreshing';
+}
+
+const initialState: authState = {
+    user: null,
+    accessToken: null,
+    refreshToken: null,
+    isLoading: true,
+    isLoggedIn: false,
+    status: 'idle'
+}
+export const refreshAccessToken = createAsyncThunk<{accessToken: string, refreshToken: string},void, {state:RootState,rejectValue: string}>(
     'auth/refreshAccessToken',
-    async (_, { getState, rejectWithValue }) => {
-        const { auth } = getState() as { auth: authState };
+    async (_, thunkAPI) => {
+        const { getState, rejectWithValue } = thunkAPI; // Destructure inside the function
+        const { auth } = getState();
         const refreshToken = auth.refreshToken;
 
         if (!refreshToken) {
@@ -25,23 +46,6 @@ export const refreshAccessToken = createAsyncThunk(
         }
     }
 );
-interface authState {
-    user: UserData | null,
-    accessToken: string | null,
-    refreshToken: string | null,
-    isLoading: boolean,
-    isLoggedIn: boolean
-    status: 'idle' | 'loading' | 'failed' | 'refreshing';
-}
-
-const initialState: authState = {
-    user: null,
-    accessToken: null,
-    refreshToken: null,
-    isLoading: true,
-    isLoggedIn: false,
-    status: 'idle'
-}
 
 export const authSlice = createSlice({
     name: 'auth',
@@ -56,6 +60,7 @@ export const authSlice = createSlice({
             state.status = 'idle';
             localStorage.setItem("username",action.payload.user.name as string);
             localStorage.setItem("isAdmin",action.payload.user.isAdmin as string);
+            localStorage.setItem("email",action.payload.user.email as string);
             localStorage.setItem("accessToken",action.payload.accessToken);
             localStorage.setItem("refreshToken",action.payload.refreshToken);
         },
@@ -68,6 +73,7 @@ export const authSlice = createSlice({
             state.status = 'idle';
             localStorage.removeItem("username");
             localStorage.removeItem("isAdmin");
+            localStorage.removeItem("email");
             localStorage.removeItem("accessToken");
             localStorage.removeItem("refreshToken");
         },
@@ -106,7 +112,9 @@ export const authSlice = createSlice({
                 state.status = 'failed';
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                localStorage.removeItem('user');
+                localStorage.removeItem('username');
+                localStorage.removeItem('isAdmin');
+                localStorage.removeItem('email');
             });
     }
 })

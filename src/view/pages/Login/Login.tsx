@@ -7,6 +7,9 @@ import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from "lucide-react"
 import {backendApi} from "../../../api.ts";
 import type {UserData} from "../../../model/userData.ts";
 import {getUserFromToken} from "../../../auth/auth.ts";
+import {useDispatch} from "react-redux";
+import type {AppDispatch} from "../../../store/store.ts";
+import {loginSuccess} from "../../../slices/authSlice.ts";
 
 interface FormErrors {
     email?: string
@@ -19,6 +22,8 @@ interface FormErrors {
  }
 
 export function Login() {
+
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
@@ -76,7 +81,7 @@ export function Login() {
         setErrors({})
 
         try {
-            // Simulate API call
+
             const userCredentials = {
                 email : formData.email,
                 password : formData.password
@@ -85,24 +90,19 @@ export function Login() {
             const accessToken = response.data.authtoken.accessToken;
             const refreshToken = response.data.authtoken.refreshToken;
 
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
 
             const user: UserData = getUserFromToken(accessToken);
 
-            localStorage.setItem("username",user.name as string);
-            localStorage.setItem("email",user.email as string);
-            localStorage.setItem("isAdmin",user.isAdmin as string)
-
-            alert("Successfully logged in")
-            if (user.isAdmin === true) {
-                navigate("/")
-            } else {
-                navigate("/")
+            if (user){
+                dispatch(loginSuccess({user, accessToken, refreshToken}));
+                alert("Successfully logged in")
+                if (user.isAdmin === true) {
+                    navigate("/")
+                } else {
+                    navigate("/")
+                }
             }
 
-            // Add your actual login logic here
-            console.log("Login successful:", formData)
         } catch (error) {
             setErrors({
                 general: error instanceof Error ? error.message : "Login failed. Please try again.",

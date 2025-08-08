@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import {useEffect, useState} from "react"
 import icon from "../../../assets/react.svg"
 import type {UserData} from "../../../model/userData.ts";
+import {getUserFromToken} from "../../../auth/auth.ts";
 
 
 
@@ -12,7 +13,10 @@ interface ResponsiveNavbarProps {
 
 
 
-export function Navbar({ user , onLogout }: ResponsiveNavbarProps) {
+export function Navbar({user, onLogout }: ResponsiveNavbarProps) {
+
+
+
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 

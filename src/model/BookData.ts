@@ -5,7 +5,7 @@ export interface BookData{
     category: string;
     description: string;
     condition: string;
-    image: string;
+    imageUrl: string;
     ownerId: string;
     createdAt:Date;
     updatedAt:Date

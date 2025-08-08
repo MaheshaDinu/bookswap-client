@@ -1,11 +1,10 @@
-
-import { useState } from 'react'
 import * as React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { X, Upload, Loader2 } from 'lucide-react'
-import { createBook, uploadImage } from '../../../slices/bookSlice.ts' // Adjust path
-import type { RootState, AppDispatch } from '../../../store/store.ts' // Adjust path
-import {unwrapResult} from "@reduxjs/toolkit";
+import {useState} from 'react'
+import {useDispatch, useSelector} from 'react-redux'
+import {Loader2, Upload, X} from 'lucide-react'
+import {createBook, uploadImage} from '../../../slices/bookSlice.ts' // Adjust path
+import type {AppDispatch, RootState} from '../../../store/store.ts' // Adjust path
+import type {BookData} from "../../../model/BookData.ts";
 
 interface AddBookModalProps {
     isOpen: boolean
@@ -36,7 +35,7 @@ const categories = [
     'Fantasy', 'Biography', 'History', 'Self-Help', 'Educational', 'Other'
 ]
 
-const conditions = ['New', 'Like New', 'Good', 'Fair', 'Poor']
+const conditions = [ "EXCELLENT",'GOOD', 'FAIR', "POOR"]
 
 export function AddBookModal({ isOpen, onClose, userId }: AddBookModalProps) {
     const dispatch:AppDispatch = useDispatch<AppDispatch>()
@@ -102,19 +101,38 @@ export function AddBookModal({ isOpen, onClose, userId }: AddBookModalProps) {
 
         try {
             // Create FormData for multipart upload
-            const bookFormData = new FormData()
-            bookFormData.append('title', formData.title.trim())
-            bookFormData.append('author', formData.author.trim())
-            bookFormData.append('category', formData.category)
-            bookFormData.append('description', formData.description.trim())
-            bookFormData.append('condition', formData.condition)
-            bookFormData.append('ownerId', userId.toString())
+
+            // bookFormData.append('title', formData.title.trim())
+            // bookFormData.append('author', formData.author.trim())
+            // bookFormData.append('category', formData.category)
+            // bookFormData.append('description', formData.description.trim())
+            // bookFormData.append('condition', formData.condition)
+            // bookFormData.append('ownerId', userId.toString())
 
             if (formData.image) {
-                const ImgUrl = await dispatch(uploadImage(formData.image))
+                const Imgresponse  = await dispatch(uploadImage(formData.image))
+                console.log(Imgresponse)
+                const url = Imgresponse.payload
+                const bookData: BookData = {
+                    id: 0,
+                    title: formData.title.trim(),
+                    author: formData.author.trim(),
+                    category: formData.category,
+                    description: formData.description.trim(),
+                    condition: formData.condition,
+                    imageUrl: url,
+                    ownerId: userId.toString(),
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+                console.log(bookData)
+                const response = await dispatch(createBook(bookData))
+
             }
 
-            await dispatch(createBook(bookFormData))
+
+
+           // await dispatch(createBook(formData))
 
             // Reset form and close modal
             setFormData({

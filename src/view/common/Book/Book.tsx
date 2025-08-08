@@ -29,7 +29,7 @@ export function Book({book}: BookProps) {
     }
 
 
-    const imageSrc = images[`../../../assets/bookCovers/${book.image}`];
+    const imageSrc = book.imageUrl;
 
 
 

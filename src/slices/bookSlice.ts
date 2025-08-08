@@ -42,14 +42,10 @@ export const getBooksByUserId = createAsyncThunk<BookData[], number>(
 );
 
 // Create a new book
-export const createBook = createAsyncThunk<BookData, FormData>(
+export const createBook = createAsyncThunk<BookData, BookData>(
     "books/createBook",
     async (bookData) => {
-        const response = await backendApi.post("/api/books/create-book", bookData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await backendApi.post("/api/books/create-book", bookData);
         return response.data;
     }
 );
@@ -124,9 +120,9 @@ export const bookSlice = createSlice({
                 state.loading = false;
                 state.userBooks = action.payload;
             })
-            .addCase(getBooksByUserId.rejected, (state:BookState, action) => {
+            .addCase(getBooksByUserId.rejected, (state:BookState, action:PayloadAction<{ code: number,message: string }>) => {
                 state.loading = false;
-                state.error = action.payload.message || 'Failed to fetch user books';
+                state.error = action.payload?.message || 'Failed to fetch user books';
                 state.userBooks = [];
             })
 

@@ -49,19 +49,19 @@ export const bookSlice = createSlice({
         extraReducers: (builder) => {
             builder
                 // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.pending, (state) => {
+                .addCase(getAllBooks.pending, (state:BookState) => {
                     state.loading = true;
                     state.error = null;
                 })
                 // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.fulfilled, (state, action) => {
+                .addCase(getAllBooks.fulfilled, (state:BookState, action) => {
                     state.loading = false;
                     state.books = action.payload;
                     state.categories = ['All', ...new Set(action.payload.map((book) => book.category))];
                     applyFilters(state);
                 })
                 // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.rejected, (state, action) => {
+                .addCase(getAllBooks.rejected, (state:BookState, action) => {
                     state.loading = false;
                     state.error = action.payload as string;
                     state.books = [];

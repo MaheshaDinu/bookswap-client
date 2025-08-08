@@ -36,7 +36,7 @@ export const getAllBooks = createAsyncThunk<BookData[]>("books/getAllBooks", asy
 export const getBooksByUserId = createAsyncThunk<BookData[], number>(
     "books/getBooksByUserId",
     async (userId) => {
-        const response = await backendApi.get(`/api/books/user/${userId}`)
+        const response = await backendApi.get(`/api/books/users/${userId}`)
         return response.data;
     }
 );
@@ -74,7 +74,7 @@ export const uploadImage = createAsyncThunk<string, File>(
                 'Content-Type': 'multipart/form-data',
             },
         });
-        return response.data.filename; // Assuming backend returns { filename: "uploaded-file-name.jpg" }
+        return response.data.url; // Assuming backend returns { filename: "uploaded-file-name.jpg" }
     }
 );
 

@@ -1,5 +1,6 @@
 import type {UserModel} from "../model/UserModel.ts";
-import {createAsyncThunk, createSlice, isRejectedWithValue, PayloadAction} from "@reduxjs/toolkit";
+import {createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import type PayloadAction from "@reduxjs/toolkit";
 import type {CreateUserPayload} from "../model/CreateUserPayload.ts";
 import {backendApi} from "../api.ts";
 
@@ -106,7 +107,7 @@ export const UserSlice = createSlice({
             .addCase(registerUser.fulfilled, (state:UserState, action: PayloadAction<UserModel>) => {
                 state.loading = false;
                 state.status = 'succeeded';
-                state.currentUser = action.payload; // Set the newly registered user as current
+                state.currentUser = action.payload.payload; // Set the newly registered user as current
                 // Optionally: state.users.push(action.payload); if you want to add it to the list immediately
             })
             .addCase(registerUser.rejected, (state:UserState, action) => {
@@ -122,10 +123,10 @@ export const UserSlice = createSlice({
                 state.error = null;
                 state.users = []; // Clear previous list when starting fetch
             })
-            .addCase(fetchAllUsers.fulfilled, (state:UserState, action: PayloadAction<UserData[]>) => {
+            .addCase(fetchAllUsers.fulfilled, (state:UserState, action: PayloadAction<{payload:UserModel[]}>) => {
                 state.loading = false;
                 state.status = 'succeeded';
-                state.users = action.payload; // Populate the users array
+                state.users = action.payload.payload; // Populate the users array
             })
             .addCase(fetchAllUsers.rejected, (state:UserState, action) => {
                 state.loading = false;
@@ -141,10 +142,10 @@ export const UserSlice = createSlice({
                 state.error = null;
                 state.currentUser = null; // Clear previous current user
             })
-            .addCase(fetchUserById.fulfilled, (state:UserState, action: PayloadAction<UserModel>) => {
+            .addCase(fetchUserById.fulfilled, (state:UserState, action: PayloadAction<{payload:UserModel}>) => {
                 state.loading = false;
                 state.status = 'succeeded';
-                state.currentUser = action.payload; // Set the fetched user as current
+                state.currentUser = action.payload.payload; // Set the fetched user as current
             })
             .addCase(fetchUserById.rejected, (state:UserState, action) => {
                 state.loading = false;
@@ -159,15 +160,15 @@ export const UserSlice = createSlice({
                 state.status = 'loading';
                 state.error = null;
             })
-            .addCase(updateUser.fulfilled, (state:UserState, action: PayloadAction<UserModel>) => {
+            .addCase(updateUser.fulfilled, (state:UserState, action: PayloadAction<{payload:UserModel}>) => {
                 state.loading = false;
                 state.status = 'succeeded';
-                state.currentUser = action.payload; // Update current user if it was updated
+                state.currentUser = action.payload.payload; // Update current user if it was updated
 
                 // Find and update the user in the 'users' array if it exists
                 const index = state.users.findIndex(user => user.id === action.payload.id);
                 if (index !== -1) {
-                    state.users[index] = action.payload;
+                    state.users[index] = action.payload.payload;
                 }
             })
             .addCase(updateUser.rejected, (state:UserState, action) => {

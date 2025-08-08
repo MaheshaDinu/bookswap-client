@@ -1,21 +1,30 @@
-import { Link } from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 import {useEffect, useState} from "react"
 import icon from "../../../assets/react.svg"
 import type {UserData} from "../../../model/userData.ts";
 import {getUserFromToken} from "../../../auth/auth.ts";
+import {useDispatch} from "react-redux";
+import type {AppDispatch} from "../../../store/store.ts";
+import {logoutSuccess} from "../../../slices/authSlice.ts";
 
 
 
 interface ResponsiveNavbarProps {
     user?: UserData | null
-    onLogout?: () => void
+
 }
 
 
 
-export function Navbar({user, onLogout }: ResponsiveNavbarProps) {
+export function Navbar({user }: ResponsiveNavbarProps) {
 
 
+    const dispatch = useDispatch<AppDispatch>();
+
+    const handleLogout = () => {
+        const  isLogout =dispatch(logoutSuccess());
+        window.location.reload()
+    }
 
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -65,7 +74,7 @@ export function Navbar({user, onLogout }: ResponsiveNavbarProps) {
                                     Profile
                                 </Link>
                                 <button
-                                    onClick={onLogout}
+                                    onClick={handleLogout}
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
                                 >
                                     Logout ({user.name})
@@ -128,7 +137,7 @@ export function Navbar({user, onLogout }: ResponsiveNavbarProps) {
                                     </Link>
                                     <button
                                         onClick={() => {
-                                            onLogout?.()
+                                            handleLogout?.()
                                             setIsMobileMenuOpen(false)
                                         }}
                                         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 text-left"

@@ -7,6 +7,7 @@ import {useEffect, useState} from "react";
 import {getUserFromToken, isTokenExpired} from "./auth/auth.ts";
 import {Unauthorized} from "./auth/Unauthorized.tsx";
 import type {UserData} from "./model/userData.ts";
+import {UserRegistration} from "./view/pages/UserRegistration/UserRegistration.tsx";
 
 function App() {
     const navigate = useNavigate()
@@ -18,6 +19,7 @@ function App() {
                 <Routes>
                     <Route path="/*" element={<DefaultLayout />}></Route>
                     <Route path="/login" element={<Login/>}></Route>
+                    <Route path="/register" element={<UserRegistration/>}></Route>
                     <Route path="unauthorized" element={<Unauthorized/>}/>
                 </Routes>
 

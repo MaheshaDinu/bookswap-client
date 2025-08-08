@@ -4,6 +4,7 @@ import {getUserFromToken, isTokenExpired} from "../auth/auth.ts";
 import {backendApi} from "../api.ts";
 import type PayloadAction from "@reduxjs/toolkit";
 import type {RootState} from "../store/store.ts";
+import {useNavigate} from "react-router-dom";
 
 
 interface authState {
@@ -65,6 +66,7 @@ export const authSlice = createSlice({
             localStorage.setItem("refreshToken",action.payload.refreshToken);
         },
         logoutSuccess: (state) => {
+
             state.user = null;
             state.accessToken = null;
             state.refreshToken = null;
@@ -76,6 +78,8 @@ export const authSlice = createSlice({
             localStorage.removeItem("email");
             localStorage.removeItem("accessToken");
             localStorage.removeItem("refreshToken");
+
+
         },
         setInitialAuth: (state) => {
             const accessToken = localStorage.getItem("accessToken");
@@ -119,5 +123,5 @@ export const authSlice = createSlice({
     }
 })
 
-export const { loginSuccess, logout, setInitialAuth } = authSlice.actions;
+export const { loginSuccess, logoutSuccess, setInitialAuth } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,7 +1,7 @@
 import type {AppDispatch, RootState} from "../store/store.ts";
 import {store} from "../store/store.ts";
 import {backendApi} from "../api.ts";
-import {logout, refreshAccessToken} from "../slices/authSlice.ts";
+import {logoutSuccess, refreshAccessToken} from "../slices/authSlice.ts";
 
 export const setupAxiosInterceptors = (store:{dispatch:AppDispatch, getState:()=>RootState}) =>{
     backendApi.interceptors.request.use(
@@ -32,13 +32,13 @@ export const setupAxiosInterceptors = (store:{dispatch:AppDispatch, getState:()=
                         return backendApi(originalRequest);
                     } else {
                         // Refresh token failed. Dispatch logout.
-                        dispatch(logout());
+                        dispatch(logoutSuccess());
                         return Promise.reject(error);
                     }
                 } catch (refreshError) {
                     // Unexpected error during refresh. Dispatch logout.
                     console.error("Error refreshing token in interceptor:", refreshError);
-                    dispatch(logout());
+                    dispatch(logoutSuccess());
                     return Promise.reject(refreshError);
                 }
             }

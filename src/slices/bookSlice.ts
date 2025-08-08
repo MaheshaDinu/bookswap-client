@@ -5,76 +5,179 @@ import {backendApi} from "../api.ts";
 
 interface BookState{
     books:BookData[],
+    userBooks: BookData[]; // Add user-specific books
     filteredBooks: BookData[];
     loading: boolean;
     error: string | null;
     searchTerm: string;
     selectedCategory: string;
     categories: string[];
+    uploadLoading: boolean; // For image upload
 }
 
 const initialState: BookState = {
     books: [],
+    userBooks: [],
     filteredBooks: [],
     loading: false,
     error: null,
     searchTerm: "",
     selectedCategory: "All",
     categories: ["All"],
+    uploadLoading: false,
 }
 
 export const getAllBooks = createAsyncThunk<BookData[]>("books/getAllBooks", async () => {
     const response = await backendApi.get("/api/books/get-all-books")
-    return response.data; // Await is not strictly needed here as axios returns a Promise
+    return response.data;
 });
 
-export const bookSlice = createSlice({
-        name: 'book',
-        initialState: initialState,
-        reducers: {
-            setSearchTerm: (state, action: PayloadAction<string>) => {
-                state.searchTerm = action.payload;
-                applyFilters(state);
-            },
-            setSelectedCategory: (state, action: PayloadAction<string>) => {
-                state.selectedCategory = action.payload;
-                applyFilters(state);
-            },
-
-            // setFilteredBooksInternal: (state) => {
-            //     applyFilters(state);
-            // },
-        },
-        extraReducers: (builder) => {
-            builder
-                // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.pending, (state:BookState) => {
-                    state.loading = true;
-                    state.error = null;
-                })
-                // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.fulfilled, (state:BookState, action) => {
-                    state.loading = false;
-                    state.books = action.payload;
-                    state.categories = ['All', ...new Set(action.payload.map((book) => book.category))];
-                    applyFilters(state);
-                })
-                // FIX: Remove explicit type 'BookState' from 'state' parameter
-                .addCase(getAllBooks.rejected, (state:BookState, action) => {
-                    state.loading = false;
-                    state.error = action.payload as string;
-                    state.books = [];
-                    state.filteredBooks = [];
-                    state.categories = ['All'];
-                });
-        }
+// Get books by user ID
+export const getBooksByUserId = createAsyncThunk<BookData[], number>(
+    "books/getBooksByUserId",
+    async (userId) => {
+        const response = await backendApi.get(`/api/books/user/${userId}`)
+        return response.data;
     }
-)
+);
 
-// The applyFilters function should also accept Draft<BookState>
-// To ensure type safety, you can define it to accept a mutable BookState
-const applyFilters = (state: BookState) => { // This BookState here is implicitly Draft<BookState> when called from reducers
-    let filtered = state.books; // Accessing state.books directly is fine within Immer
+// Create a new book
+export const createBook = createAsyncThunk<BookData, FormData>(
+    "books/createBook",
+    async (bookData) => {
+        const response = await backendApi.post("/api/books/create-book", bookData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    }
+);
+
+// Delete a book
+export const deleteBook = createAsyncThunk<number, number>(
+    "books/deleteBook",
+    async (bookId) => {
+        await backendApi.delete(`/api/books/delete-book/${bookId}`);
+        return bookId;
+    }
+);
+
+// Upload image
+export const uploadImage = createAsyncThunk<string, File>(
+    "books/uploadImage",
+    async (imageFile) => {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        const response = await backendApi.post("/api/upload/image", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data.filename; // Assuming backend returns { filename: "uploaded-file-name.jpg" }
+    }
+);
+
+export const bookSlice = createSlice({
+    name: 'book',
+    initialState: initialState,
+    reducers: {
+        setSearchTerm: (state, action: PayloadAction<string>) => {
+            state.searchTerm = action.payload;
+            applyFilters(state);
+        },
+        setSelectedCategory: (state, action: PayloadAction<string>) => {
+            state.selectedCategory = action.payload;
+            applyFilters(state);
+        },
+        clearError: (state) => {
+            state.error = null;
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            // Get all books
+            .addCase(getAllBooks.pending, (state:BookState) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllBooks.fulfilled, (state:BookState, action) => {
+                state.loading = false;
+                state.books = action.payload;
+                state.categories = ['All', ...new Set(action.payload.map((book) => book.category))];
+                applyFilters(state);
+            })
+            .addCase(getAllBooks.rejected, (state:BookState, action) => {
+                state.loading = false;
+                state.error = action.payload.message || 'Failed to fetch books';
+                state.books = [];
+                state.filteredBooks = [];
+                state.categories = ['All'];
+            })
+
+            // Get user books
+            .addCase(getBooksByUserId.pending, (state:BookState) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getBooksByUserId.fulfilled, (state:BookState, action) => {
+                state.loading = false;
+                state.userBooks = action.payload;
+            })
+            .addCase(getBooksByUserId.rejected, (state:BookState, action) => {
+                state.loading = false;
+                state.error = action.payload.message || 'Failed to fetch user books';
+                state.userBooks = [];
+            })
+
+            // Create book
+            .addCase(createBook.pending, (state:BookState) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createBook.fulfilled, (state:BookState, action) => {
+                state.loading = false;
+                state.userBooks.push(action.payload);
+                state.books.push(action.payload);
+            })
+            .addCase(createBook.rejected, (state:BookState, action) => {
+                state.loading = false;
+                state.error = action.payload.message || 'Failed to create book';
+            })
+
+            // Delete book
+            .addCase(deleteBook.pending, (state:BookState) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteBook.fulfilled, (state:BookState, action) => {
+                state.loading = false;
+                const bookId = action.payload;
+                state.userBooks = state.userBooks.filter(book => book.id !== bookId);
+                state.books = state.books.filter(book => book.id !== bookId);
+            })
+            .addCase(deleteBook.rejected, (state:BookState, action) => {
+                state.loading = false;
+                state.error = action.payload.message || 'Failed to delete book';
+            })
+
+            // Upload image
+            .addCase(uploadImage.pending, (state:BookState) => {
+                state.uploadLoading = true;
+                state.error = null;
+            })
+            .addCase(uploadImage.fulfilled, (state:BookState) => {
+                state.uploadLoading = false;
+            })
+            .addCase(uploadImage.rejected, (state:BookState, action) => {
+                state.uploadLoading = false;
+                state.error = action.payload.message || 'Failed to upload image';
+            });
+    }
+})
+
+const applyFilters = (state: BookState) => {
+    let filtered = state.books;
 
     if (state.searchTerm) {
         filtered = filtered.filter(
@@ -91,5 +194,5 @@ const applyFilters = (state: BookState) => { // This BookState here is implicitl
     state.filteredBooks = filtered;
 };
 
-export const { setSearchTerm, setSelectedCategory } = bookSlice.actions;
+export const { setSearchTerm, setSelectedCategory, clearError } = bookSlice.actions;
 export default bookSlice.reducer;

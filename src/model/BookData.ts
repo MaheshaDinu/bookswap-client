@@ -7,4 +7,6 @@ export interface BookData{
     condition: string;
     image: string;
     ownerId: string;
+    createdAt:Date;
+    updatedAt:Date
 }

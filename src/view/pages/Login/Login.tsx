@@ -1,18 +1,25 @@
-"use client"
 
 import * as React from "react"
 
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from "lucide-react"
+import {backendApi} from "../../../api.ts";
+import type {UserData} from "../../../model/userData.ts";
+import {getUserFromToken} from "../../../auth/auth.ts";
 
 interface FormErrors {
     email?: string
     password?: string
     general?: string
 }
+ type FormData = {
+    email: string;
+    password: string;
+ }
 
 export function Login() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -34,7 +41,7 @@ export function Login() {
         // Password validation
         if (!formData.password) {
             newErrors.password = "Password is required"
-        } else if (formData.password.length < 6) {
+        } else if (!formData.password || (formData.password as string).length < 6) {
             newErrors.password = "Password must be at least 6 characters"
         }
 
@@ -70,11 +77,28 @@ export function Login() {
 
         try {
             // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 2000))
+            const userCredentials = {
+                email : formData.email,
+                password : formData.password
+            };
+            const response = await backendApi.post("/api/auth/login", userCredentials);
+            const accessToken = response.data.authtoken.accessToken;
+            const refreshToken = response.data.authtoken.refreshToken;
 
-            // Simulate login failure for demo
-            if (formData.email === "demo@error.com") {
-                throw new Error("Invalid email or password")
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+
+            const user: UserData = getUserFromToken(accessToken);
+
+            localStorage.setItem("username",user.name as string);
+            localStorage.setItem("email",user.email as string);
+            localStorage.setItem("isAdmin",user.isAdmin as string)
+
+            alert("Successfully logged in")
+            if (user.isAdmin === true) {
+                navigate("/")
+            } else {
+                navigate("/")
             }
 
             // Add your actual login logic here
@@ -188,6 +212,7 @@ export function Login() {
                             type="submit"
                             disabled={isLoading}
                             className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+
                         >
                             {isLoading ? (
                                 <>

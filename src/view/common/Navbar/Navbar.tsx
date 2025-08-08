@@ -1,19 +1,22 @@
 import { Link } from "react-router-dom"
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import icon from "../../../assets/react.svg"
+import type {UserData} from "../../../model/userData.ts";
 
-interface User {
-    name: string
-    id: string
-}
+
 
 interface ResponsiveNavbarProps {
-    user?: User | null
+    user?: UserData | null
     onLogout?: () => void
 }
 
-export function Navbar({ user, onLogout }: ResponsiveNavbarProps) {
+
+
+export function Navbar({ user , onLogout }: ResponsiveNavbarProps) {
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen)

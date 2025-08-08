@@ -1,65 +1,42 @@
-"use client"
 
-import { useState, useEffect } from "react"
+import {  useEffect } from "react"
 import { Search, Filter, BookOpen } from "lucide-react"
 import { Book } from "../../common/Book/Book.tsx"
-import type { BookData } from "../../../model/BookData.ts"
 import { Link } from "react-router-dom"
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState,AppDispatch} from "../../../store/store.ts";
+import {getAllBooks, setSearchTerm, setSelectedCategory} from "../../../slices/bookSlice.ts";
+
 
 interface HomeProps {
     isLoggedIn?: boolean
 }
 
 export function Home({ isLoggedIn = false }: HomeProps) {
-    const [books, setBooks] = useState<BookData[]>([])
-    const [filteredBooks, setFilteredBooks] = useState<BookData[]>([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState("All")
+    const dispatch: AppDispatch = useDispatch();
+    // const [books, setBooks] = useState<BookData[]>([])
+    // const [filteredBooks, setFilteredBooks] = useState<BookData[]>([])
+    // const [loading, setLoading] = useState(true)
+    // const [error, setError] = useState<string | null>(null)
+    // const [searchTerm, setSearchTerm] = useState("")
+    // const [selectedCategory, setSelectedCategory] = useState("All")
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                setLoading(true)
-                const response = await fetch("/book-data.json")
-                if (!response.ok) {
-                    throw new Error("Failed to fetch books")
-                }
-                const jsonData = await response.json()
-                setBooks(jsonData)
-                setFilteredBooks(jsonData)
-            } catch (error) {
-                console.error("Error fetching books:", error)
-                setError("Failed to load books. Please try again later.")
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchBooks()
-    }, [])
+    const { books, filteredBooks, loading, error, searchTerm, selectedCategory, categories } = useSelector(
+        (state: RootState) => state.books
+    )
 
-    // Filter books based on search term and category
-    useEffect(() => {
-        let filtered = books
+    useEffect(()=>{
+        dispatch(getAllBooks())
+    },[dispatch]);
 
-        if (searchTerm) {
-            filtered = filtered.filter(
-                (book) =>
-                    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    book.author.toLowerCase().includes(searchTerm.toLowerCase()),
-            )
-        }
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        dispatch(setSearchTerm(e.target.value));
+    };
 
-        if (selectedCategory !== "All") {
-            filtered = filtered.filter((book) => book.category === selectedCategory)
-        }
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setSelectedCategory(e.target.value));
+    };
 
-        setFilteredBooks(filtered)
-    }, [books, searchTerm, selectedCategory])
-
-    // Get unique categories
-    const categories = ["All", ...new Set(books.map((book) => book.category))]
 
     // Loading skeleton component
     const BookSkeleton = () => (
